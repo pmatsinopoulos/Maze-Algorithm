@@ -31,4 +31,28 @@ class Position
   def ==(b)
     @w == b.w && @h == b.h
   end
+
+  # Returns new Position object which is on the right of self
+  #
+  # @param {wmax} Integer that limits movements to the right.
+  #
+  def right(wmax)
+    return nil if @w + 1 > wmax
+    return Position.new(@w + 1, @h)
+  end
+
+  def left
+    return nil if @w - 1 < 1
+    return Position.new(@w - 1, @h)
+  end
+
+  def top(hmax)
+    return nil if @h + 1 > hmax
+    return Position.new(@w, @h + 1)
+  end
+
+  def bottom
+    return nil if @h - 1 < 1
+    return Position.new(@w, @h - 1)
+  end
 end

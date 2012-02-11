@@ -25,6 +25,8 @@ class MazeTest < Test::Unit::TestCase
         assert maze_attribute[i - 1][j - 1].is_a?(MazeElement)
       end
     end
+    assert maze.path_to_goal.is_a?(Array)
+    assert_equal 0, maze.path_to_goal.size
   end
 
   def test_initialize_with_some_walls
@@ -140,6 +142,32 @@ class MazeTest < Test::Unit::TestCase
     assert_raise Exception do
       Maze.new(w, h, walls, Position.new(1, 3), Position.new(1, 3))
     end
+  end
+
+  # width
+  def test_width
+    w = 6
+    h = 7
+    maze = Maze.new(w, h)
+    assert_equal 6, maze.width
+  end
+
+  # height
+  def test_height
+    w = 6
+    h = 7
+    maze = Maze.new(w, h)
+    assert_equal 7, maze.height
+  end
+
+  # maze_element
+  def test_maze_element
+    w = 6
+    h = 7
+    maze = Maze.new(w, h)
+    maze_attribute = maze.send("maze")
+    position = Position.new(3, 4)
+    assert_equal maze_attribute[position.w - 1][position.h - 1], maze.maze_element(position)
   end
 
   # start
@@ -312,6 +340,91 @@ class MazeTest < Test::Unit::TestCase
     assert maze_attribute[2 - 1][3 - 1].is_a?(Free)
   end
 
+  # do not visit flag
+  def test_do_not_visit_if_wall
+    w = 6
+    h = 7
+    p = Position.new(5, 5)
+    walls = [p]
+    maze = Maze.new(6, 7, walls)
+    assert maze.do_not_visit?(p)
+  end
+
+  def test_do_not_visit_if_visited
+    w = 6
+    h = 7
+    p = Position.new(5, 5)
+    maze = Maze.new(6, 7)
+    me = maze.maze_element(p)
+    me.visited = true
+    assert maze.do_not_visit?(p)
+  end
+
+  def test_do_not_visit_if_position_nil
+    w = 6
+    h = 7
+    maze = Maze.new(6, 7)
+    assert maze.do_not_visit?(nil)
+  end
+
+  # find path to goal
+
+  def test_find_path_to_goal_1
+    w = 6
+    h = 6
+    walls = [Position.new(1, 3), Position.new(2, 3), Position.new(3, 3), Position.new(3, 2),
+             Position.new(3, 5), Position.new(4, 5), Position.new(5, 5), Position.new(5, 3),
+             Position.new(6, 5), Position.new(6, 3)]
+    start = Position.new(1, 1)
+    goal = Position.new(5, 6)
+    maze = Maze.new(w, h, walls, start, goal)
+    path_to_goal = maze.find_path_to_goal
+    assert_equal [Position.new(1, 1), Position.new(1, 2), Position.new(2, 2), Position.new(2, 1),
+                  Position.new(3, 1), Position.new(4, 1), Position.new(4, 2), Position.new(4, 3),
+                  Position.new(4, 4), Position.new(5, 4), Position.new(6, 4), Position.new(3, 4),
+                  Position.new(2, 4), Position.new(2, 5), Position.new(2, 6), Position.new(3, 6),
+                  Position.new(4, 6), Position.new(5, 6)], path_to_goal
+  end
+
+  def test_find_path_to_goal_2
+    w = 5
+    h = 4
+    walls = [Position.new(1, 3), Position.new(2, 3), Position.new(3, 3), Position.new(4, 3),
+             Position.new(4, 2)]
+    start = Position.new(3, 2)
+    goal = Position.new(1, 4)
+    maze = Maze.new(w, h, walls, start, goal)
+    path_to_goal = maze.find_path_to_goal
+    assert_equal [Position.new(3, 2), Position.new(2, 2), Position.new(1, 2), Position.new(1, 1),
+                  Position.new(2, 1), Position.new(3, 1), Position.new(4, 1), Position.new(5, 1),
+                  Position.new(5, 2), Position.new(5, 3), Position.new(5, 4), Position.new(4, 4),
+                  Position.new(3, 4), Position.new(2, 4), Position.new(1, 4)], path_to_goal
+  end
+
+  def test_find_path_to_goal_3
+    w = 2
+    h = 2
+    start = Position.new(1, 1)
+    goal = Position.new(2, 2)
+    maze = Maze.new(w, h, nil, start, goal)
+    path_to_goal = maze.find_path_to_goal
+    assert_equal [Position.new(1, 1), Position.new(1, 2), Position.new(2, 2)], path_to_goal
+  end
+
+  def test_find_path_to_goal_4
+    w = 3
+    h = 5
+    start = Position.new(3, 1)
+    goal = Position.new(1, 1)
+    walls = [Position.new(2, 1), Position.new(2, 2), Position.new(2, 3), Position.new(2, 4)]
+    maze = Maze.new(w, h, walls, start, goal)
+    path_to_goal = maze.find_path_to_goal
+    assert_equal [Position.new(3, 1), Position.new(3, 2), Position.new(3, 3),
+                  Position.new(3, 4), Position.new(3, 5), Position.new(2, 5),
+                  Position.new(1, 5), Position.new(1, 4), Position.new(1, 3),
+                  Position.new(1, 2), Position.new(1, 1)], path_to_goal
+  end
+
   # validate dimensions
 
   def test_width_and_height_validation
@@ -328,4 +441,5 @@ class MazeTest < Test::Unit::TestCase
       Maze.new(2, 1)
     end
   end
+
 end
