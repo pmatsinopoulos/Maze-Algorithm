@@ -1,0 +1,2 @@
+class MazeElement
+end
