@@ -10,10 +10,12 @@ class Stack
   end
 
   def pop
+    return nil if empty?
     @stack.delete_at(@stack.size - 1)
   end
 
   def top
+    return nil if empty?
     @stack[@stack.size - 1]
   end
 

@@ -25,12 +25,22 @@ class StackTest < Test::Unit::TestCase
     assert_equal number_of_elements_after - 1, @stack.size
   end
 
+  def test_pop_returns_nil_on_empty_stack
+    s = Stack.new
+    assert_nil s.pop
+  end
+
   def test_top
     number_of_elements_before = @stack.size
     @stack.push(1)
     number_of_elements_after = @stack.size
     assert_equal number_of_elements_before + 1, number_of_elements_after
     assert_equal 1, @stack.top
+  end
+
+  def test_top_returns_nil_on_empty_stack
+    s = Stack.new
+    assert_nil s.top
   end
 
   def test_size
