@@ -1,9 +1,12 @@
 class Stack
+  include Enumerable
 
   # public methods
   def initialize
     @stack = Array.new
   end
+
+  attr_reader :stack
 
   def push(element)
     @stack << element
@@ -25,6 +28,10 @@ class Stack
 
   def empty?
     @stack.size == 0
+  end
+
+  def each(&block)
+    @stack.each(&block)
   end
 
 end
