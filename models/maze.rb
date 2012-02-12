@@ -42,12 +42,7 @@ class Maze
     @goal = goal   unless goal.nil?
 
     raise Exception.new("Cannot have start and goal on same position") unless start.nil? || goal.nil? || start != goal
-
-    # This will hold the path to the goal. They will be +Position+ instances
-    @path_to_goal = Array.new
   end
-
-  attr_reader :path_to_goal
 
   def width
     @maze.size
@@ -132,34 +127,52 @@ class Maze
   #
   #
   def find_path_to_goal
-    s = Stack.new # s will hold +Position+ objects that correspond to Frees that I have to visit, but have not visited yet
-    s.push(@start)
-    @path_to_goal.clear
-    while !s.empty?
-      current_position = s.pop
-      @path_to_goal << current_position
-      if current_position == @goal
-        # puts "Success reaching #{@goal.w}/#{@goal.h}. Path is #{@path_to_goal.inspect}"
-        s = Stack.new # just to end loop
-      else
-        current_element = maze_element(current_position)
-        current_element.visited = true
+    # will hold the two things
+    # 1) the Position that is part of the path to goal
+    # 2) candidate next steps Stack, which will hold other paths that we could follow
+    #    when being on the particular Position.
+    path_to_goal = Stack.new
 
-        # need to add the neighbouring positions that can be visited
-        # marking that have to visit them. Note that we are not allowed to walk
-        # diagonally.
-        current_top = current_position.top(height)
-        current_right = current_position.right(width)
-        current_bottom = current_position.bottom
-        current_left = current_position.left
+    current_position = @start
+    while !current_position.nil? && current_position != @goal
+      # put current position in path
+      path_to_goal_element = {:position => current_position, :candidate_steps => Stack.new}
+      # find the candidate next steps
+      current_top = current_position.top(height)
+      current_right = current_position.right(width)
+      current_bottom = current_position.bottom
+      current_left = current_position.left
+      # add those that are not Walls, into the position candidate steps stack
+      path_to_goal_element[:candidate_steps].push(current_bottom) unless do_not_visit?(current_bottom)
+      path_to_goal_element[:candidate_steps].push(current_left)   unless do_not_visit?(current_left)
+      path_to_goal_element[:candidate_steps].push(current_right)  unless do_not_visit?(current_right)
+      path_to_goal_element[:candidate_steps].push(current_top)    unless do_not_visit?(current_top)
 
-        s.push(current_bottom) unless do_not_visit?(current_bottom)
-        s.push(current_left)   unless do_not_visit?(current_left)
-        s.push(current_right)  unless do_not_visit?(current_right)
-        s.push(current_top)    unless do_not_visit?(current_top)
+      # add element to path and mark as visited, This will help us add candidate steps that have not been visited.
+      path_to_goal.push(path_to_goal_element)
+      me = maze_element(current_position)
+      me.visited = true
+
+      # Now, I have to pick up the next current position.
+      # I will find the first path element that has candidate steps.
+      # If a path element does not have candidate steps then it is removed from path.
+      #
+      while !path_to_goal.top.nil? && path_to_goal.top[:candidate_steps].empty?
+        path_to_goal.pop
       end
+      current_position = nil # just in case we have to finish loop here
+      current_position = path_to_goal.top[:candidate_steps].pop unless path_to_goal.top.nil?
     end
-    @path_to_goal
+
+    # check whether loop ended with current_position equal to goal
+    if current_position == @goal
+      path_to_goal.push({:position => current_position})
+    end
+    if path_to_goal.nil?
+      return nil
+    else
+      path_to_goal.map{|p| p[:position]}
+    end
   end
 
   protected

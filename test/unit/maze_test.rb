@@ -379,11 +379,14 @@ class MazeTest < Test::Unit::TestCase
     goal = Position.new(5, 6)
     maze = Maze.new(w, h, walls, start, goal)
     path_to_goal = maze.find_path_to_goal
-    assert_equal [Position.new(1, 1), Position.new(1, 2), Position.new(2, 2), Position.new(2, 1),
-                  Position.new(3, 1), Position.new(4, 1), Position.new(4, 2), Position.new(4, 3),
-                  Position.new(4, 4), Position.new(5, 4), Position.new(6, 4), Position.new(3, 4),
-                  Position.new(2, 4), Position.new(2, 5), Position.new(2, 6), Position.new(3, 6),
-                  Position.new(4, 6), Position.new(5, 6)], path_to_goal
+    outcome = [Position.new(1, 1), Position.new(1, 2), Position.new(2, 2), Position.new(2, 1),
+                      Position.new(3, 1), Position.new(4, 1), Position.new(4, 2), Position.new(4, 3),
+                      Position.new(4, 4), Position.new(3, 4),
+                      Position.new(2, 4), Position.new(2, 5), Position.new(2, 6), Position.new(3, 6),
+                      Position.new(4, 6), Position.new(5, 6)]
+    assert_equal outcome.size, path_to_goal.size
+
+    assert_equal outcome, path_to_goal
   end
 
   def test_find_path_to_goal_2
@@ -423,6 +426,17 @@ class MazeTest < Test::Unit::TestCase
                   Position.new(3, 4), Position.new(3, 5), Position.new(2, 5),
                   Position.new(1, 5), Position.new(1, 4), Position.new(1, 3),
                   Position.new(1, 2), Position.new(1, 1)], path_to_goal
+  end
+
+  def test_find_path_to_goal_that_cannot_be_reached
+    w = 4
+    h = 3
+    walls = [Position.new(1,2), Position.new(2, 2), Position.new(3, 2), Position.new(4, 1), Position.new(1, 3)]
+    maze = Maze.new(w, h, walls)
+    maze.start = 1, 1
+    maze.goal = 2, 3
+    path_to_goal = maze.find_path_to_goal
+    assert_equal [], path_to_goal
   end
 
   # validate dimensions
